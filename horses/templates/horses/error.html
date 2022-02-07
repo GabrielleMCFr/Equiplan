@@ -1,0 +1,13 @@
+{% extends "horses/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <div class="container" id="error">
+        <h2  class="display-6">Oops, something went wrong ! </h2>
+            {% if message %}
+                {{message}}
+            {% endif %}
+    </div>
+
+{% endblock%}

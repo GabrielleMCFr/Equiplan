@@ -1,0 +1,33 @@
+{% extends "horses/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <div id="contactus" class="container">
+      <h1 class="display-6" style="text-align:center"> Nous contacter </h1>
+      <br>
+      
+        <div id="cntus" class="cont2">
+            <div id="adress" class="cont4">
+                <div class="row">
+                    <div class="sidebar col-lg-4 col-md-3" style="text-align:center">
+                        <img style="width:300px" src={% static "horses/S48B9592.jpg" %} alt="logofacebook">
+                    </div>
+
+                    <div class="main col-lg-8 col-md-8" style="padding-top:70px">
+                        
+                        <p>Pour toute question ou demande, n'hésitez pas à nous contacter via harasdeclayrel@outlook.fr. </p>
+            
+                        <p> Vous pouvez également nous suivre sur facebook : <a href="https://www.facebook.com/haras.declayrel.7/"><img style="width:20px" src={% static "horses/facebook.png" %} alt="logofacebook"> </a></p>
+                
+                    </div>
+
+               </div>
+            </div>
+
+        </div>
+        
+    </div>
+
+
+{% endblock%}

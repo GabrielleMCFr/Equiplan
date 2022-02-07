@@ -1,0 +1,95 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>{% block title %}Equiplan{% endblock %}</title>
+        
+        <meta name="viewport" content="initial-scale=1, width=device-width">
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">           
+        
+        <link href="{% static 'horses/styles.css' %}" rel="stylesheet">
+        <link href="{% static 'horses/styles2.css' %}" rel="stylesheet">
+        <link rel="shortcut icon" href="{%  static 'horses/favicon.ico' %}">
+        
+        {% block script %}  
+        {% endblock %}
+    </head>
+    <body>
+
+        <div class="jumbotron jumbotron-fluid" style="background-color:white; padding-top:20px; padding-bottom:20px">
+            <div class="row">
+                <div class="sidebar col-lg-2 col-md-2" style="text-align:center">
+                   <img style="width:120px" src={% static "horses/pegasus2.jpg" %} alt="logo"> 
+                </div>
+
+                <div class="main col-lg-8 col-md-6"  style="text-align:center; padding-right:20px">
+                    <h1 class="display-4">Equiplan</h1>
+                    <p class="lead">Gérez vos chevaux, leur santé et leurs rendez-vous.</p>
+                </div>
+
+                <div class="main col-lg-2 col-md-2" style="text-align:center; padding-right:20px">
+                    <a href="http://www.harasdeclayrel.com"><img style="width:80px" src={% static "horses/LOGO-ultime.png" %} alt="logo"></a>
+                    <p class="lead">Créé par le Haras de Clayrel</p>
+                </div>
+            </div>
+        </div>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          
+            <div class="container-fluid">
+            {% if user.is_authenticated %}
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                  <a class="nav-link" style="padding-left:80px" href="{% url 'index' %}">Accueil</a>
+                </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="padding-left:80px" href="{% url 'myhorses' %}">Mes chevaux</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="padding-left:80px" href="{% url 'contacts' %}">Mes contacts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="padding-left:80px" href="{% url 'inventory' %}">Mon inventaire</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item ">
+                        <a class="nav-link" style="padding-left:20px" href="{% url 'profile' request.user.id %}">Mon profil</a>
+                    </li>
+                    <li class="nav-item" >
+                        <a class="nav-link" style="padding-left:20px; padding-right:20px" href="{% url 'logout' %}">Déconnexion</a>
+                    </li>
+                </ul>
+                
+                {% else %}
+                <ul class="navbar-nav mr-auto mb-2 mb-lg-0" >
+                <li class="nav-item">
+                    <a class="nav-link" style="padding-left:80px" href="{% url 'index' %}">Accueil</a>
+                  </li>
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0" >
+                
+                    <li class="nav-item">
+                        <a class="nav-link" style="padding-left:20px" href="{% url 'login' %}">Se connecter</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" style="padding-left:20px; padding-right:20px" href="{% url 'register' %}">S'enregistrer</a>
+                    </li>
+                </ul>
+                {% endif %}         
+            </div>
+          </nav>      
+        <div>
+        
+        {% block body %}
+        {% endblock %}
+        
+        </div>
+        <div class="footer" >
+            
+        Copyright &#169 2021 | equiplan.com | Version démo | <a href="{% url 'politiquedeconf' %}" style="color:white">Politique de confidentialité</a> | <a href="{% url 'help' %}" style="color:white">Mode d'emploi </a>| <a href="{% url 'contactus' %}" style="color:white"> Contact </a>
+        </div>
+    </body>
+</html>

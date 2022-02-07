@@ -1,0 +1,67 @@
+{% extends "horses/layout.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block body %}
+{% if request.user == user %}
+    <div class="container" id="userhorses">
+        <h2 class="display-6">Mes chevaux </h2>
+            <hr>
+            <button id="addhorse" class="editbutton2 rounded-pill" style="text-align:right" onclick=addhorse()>Ajouter un cheval</button>
+            <div class="cont2">
+            {% if message %}
+                {{message}}
+            {% endif %}
+            </div>
+
+            <div id="myhorses" class="d-flex flex-wrap cont2">
+                {% for horse in horses %}
+                    <div id="horse+{{horse.id}}" class="horseitem">
+                        {% for avatar in avatars %}
+                            {% if horse.picture == avatar %}
+                                {% if horse.picture == '25' %}
+                        
+                                    <a href="{% url 'horse' horse.id %}">
+                                    <img src="{% static "horses/avatars/grey.jpg" %}"  id="pichorse+{{horse.id}}" class="rounded-circle" style="width:120px; cursor:pointer; text-align:center" alt="nopicture" )>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'horse' horse.id %}">
+                                    <img src="{% static "horses/avatars/"|add:horse.picture|add:".png" %}"  id="pichorse+{{horse.id}}" class="rounded-circle" style="width:120px; cursor:pointer; text-align:center" alt="nopicture" )>
+                                    </a>
+                        
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        <div style="width:120px; height:auto; cursor:pointer; text-align:center" id="infoshorse+{{horse.id}}" ><a href="{% url 'horse' horse.id %}" class="btn btn-light" style="background-color:white; border-color: white; ">{{horse.name}} <p>{{horse.age|default_if_none:""}}</p></a></div>   
+                    
+                    </div>
+                {% endfor %} 
+            </div>
+
+            
+    </div>
+    <div class="cont2" id="newhorse">
+        <h2 class="display-6">Ajouter un nouveau cheval</h2>
+    <p> Tous les champs avec un * sont obligatoires, les autres sont optionnels.</p>
+    <form class="cont2" id="newhorseform" action="{% url 'myhorses' %}" method="post" enctype="multipart/form-data" autocomplete="off" style="width:60%">
+    {% csrf_token %}
+    {{form|crispy}}
+    <input class="btn btn-primary" id='user-submit' type="submit" value="Enregistrer">
+    </form>
+    </div>
+
+    
+    <button id="backview" onclick=goback() class="btn btn-light"> Retour </button>
+   
+{% else %}
+    <div class="container" id="myhorses">
+    Impossible d'accéder à votre requête.</div>
+{% endif %}
+  
+{% endblock%}
+
+{% block script %} 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    
+    <script src="{% static 'horses/myhorses.js' %}"></script>    
+{% endblock %}

@@ -1,0 +1,1386 @@
+{% extends "horses/layout.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+{% if request.user == user %}
+    <div class="container" id="horse" tabindex="0">
+        <div id='msgforuser' class="warning"> {% if message %} {{message}} {% endif %}</div>
+          <div id="yeartoday" data-value="{{actualyear}}"></div>
+          <div class="row">
+            <div class="sidebar col-lg-6 col-md-5">
+              <div id="infos" data-value="{{horse.id}}">
+                <h2>{{horse.name}} <button class="editbutton rounded-pill" id="edithorse" onclick=editinfos({{horse.id}}) >Modifier &#128394</button></h2>
+                <h3> {{horse.sex}}{% if horse.age %}, {{horse.age|default_if_none:""}} </h3>
+                <h3>  {{actualage|default_if_none:""}} ans {% else %} </h3> {% endif %} </h3>
+                <h3> {{horse.coat}}</h3>
+                <h3> {{horse.breed}} </h3>
+                <h5> N SIRE : {{horse.ifce}} </h5>
+                <h5> N UELN/transpondeur : {{horse.ueln}} </h5>
+                <h5> Tests : {{horse.tests}} </h5>
+              </div>
+
+              <div id="forminfos" tabindex="0">   
+                <div style="text-align:right"><button class="editbutton rounded-pill" id="backinfos" onclick=goback('I')>Retour</button> </div>           
+                <div id="warninginfoshorse">Les champs marqués d'un * doivent être renseignés. Les autres sont optionnels.</div>
+                <form id="horseinfos" autocomplete="off">
+                {% csrf_token %}
+                <br>
+                <label for="horsename">Nom : *</label>
+                <input class="form-control" type="text" id="horsename" placeholder="Nom" value="{{horse.name}}" minlength="1" maxlength="80"/>
+                <br>
+                <label for="horsesex">Sexe : *</label>
+                <select name="horsesex" id="horsesex" class="form-control">
+                  {% if horse.sex == 'Hongre' %}
+                  <option value="{{horse.sex}}" selected>{{horse.sex}}</option>
+                  <option value="Jument">Jument</option>
+                  <option value="Etalon">Etalon</option>
+                  <option value="Entier">Entier</option>
+                  {% elif horse.sex == 'Jument'%}
+                  <option value="{{horse.sex}}" selected>{{horse.sex}}</option>
+                  <option value="Hongre">Hongre</option>
+                  <option value="Etalon">Etalon</option>
+                  <option value="Entier">Entier</option>
+                  {% elif horse.sex == 'Etalon'%}
+                  <option value="{{horse.sex}}" selected>{{horse.sex}}</option>
+                  <option value="Hongre">Hongre</option>
+                  <option value="Jument">Jument</option>
+                  <option value="Entier">Entier</option>
+                  {% else %}
+                  <option value="{{horse.sex}}" selected>{{horse.sex}}</option>
+                  <option value="Hongre">Hongre</option>
+                  <option value="Jument">Jument</option>
+                  <option value="Etalon">Etalon</option>
+                  {% endif %}   
+                </select>
+                <br>
+                <label for="horseage">Année de naissance :</label>
+                <input class="form-control" type="number" id="horseage" value="{{horse.age}}" min="1950" max="{{actualyear}}" step="1"/> 
+                <br>
+                <label for="horsecoat">Robe :</label>
+                <input class="form-control" type="text" id="horsecoat" value="{{horse.coat}}" maxlength="100"/>
+                <br>
+                <label for="horsebreed">Race :</label>
+                <input class="form-control" type="text" id="horsebreed" placeholder="Race" value="{{horse.breed}}" maxlength="100"/>
+                <br>
+                <label for="horseifce">Numéro SIRE :</label>
+                <input class="form-control" type="text" id="horseifce" value="{{horse.ifce}}" maxlength="9"/>
+                <br>
+                <label for="horseueln">UELN/transpondeur :</label>
+                <input class="form-control" type="text" id="horseueln" value="{{horse.ueln}}" maxlength="15"/>
+                <br>
+                <label for="horsetests">Tests génétiques :</label>
+                <input class="form-control" type="text" id="horsetests"  value="{{horse.tests}}" maxlength="80"/>
+                <br>
+                <input class="btn btn-primary" id='horse-submit' type="submit" value="Valider"> 
+                </form> 
+              </div>
+              
+            </div>
+              <div class="sidebar col-lg-5 col-md-4" style="padding-top:20px;">
+               <div  id="picture" class="text-center text-sm-start" data-value="{{horse.picture}}">
+                <button type="button" class="rounded-circle" style="border:none; background-color:white" data-bs-toggle="modal" data-bs-target="#picModal">
+                {% for avatar in avatars %}
+                  {% if horse.picture == avatar %}
+                    {% if horse.picture == '25' %}
+                      <img src="{% static "horses/avatars/grey.jpg" %}"  id="pichorse+{{horse.id}}" class="rounded-circle" style="width:150px; cursor:pointer" alt="avatar">                        
+                    {% else %}
+                      <img src="{% static "horses/avatars/"|add:horse.picture|add:".png" %}"  id="pichorse+{{horse.id}}" class="rounded-circle" style="width:200px; cursor:pointer" alt="avatar">          
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+                </button>
+
+                <div class="modal fade" id="picModal" tabindex="-1" aria-labelledby="picModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                      <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title" id="picModalLabel">Choisissez votre avatar</h5>
+                          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Annuler</button>
+                      </div>
+                      <div class="modal-body">
+                            {% for avatar in avatars %}
+                              {% if avatar == '25' %}
+                              <button class="rounded-circle" style="border:none; background-color:white" onclick=changeavatar('25') data-bs-dismiss="modal"><img src="{% static "horses/avatars/grey.jpg" %}"  id="choosepichorse+25" class="rounded-circle" style="width:60px; cursor:pointer" alt="avatar">                        
+                              </button>
+                              {% else %}
+                            <button class="rounded-circle" style="border:none; background-color:white" onclick=changeavatar({{avatar}}) data-bs-dismiss="modal"><img src="{% static "horses/avatars/"|add:avatar|add:".png" %}"  id="choosepichorse+{{avatar}}" class="rounded-circle" style="width:80px; cursor:pointer" alt="avatar">                        
+                            </button>
+                              {% endif %}
+                          {% endfor %}
+                      </div>   
+                      </div>
+                  </div>
+                  </div>
+              </div>
+              </div>
+
+              <div class="sidebar col-lg-1 col-md-1" style="text-align:center; padding:20px">
+                <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#horseModal">Supprimer
+                        </button>
+                        <!-- Modal -->
+                    <div class="modal fade" id="horseModal" tabindex="-1" aria-labelledby="horseModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="horseModalLabel">Etes-vous sûr ?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Veuillez confirmer la supression 
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Annuler</button>
+                            <a type="button" class="btn btn-danger" href="{% url 'delete' horse.id %}">Supprimer</a>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+              </div>
+            </div>           
+
+
+        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+          <div class="cont2 fluid">
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked onclick=notesview()>
+            <label class="btn btn-outline-dark" for="btnradio1"> 📜 Notes </label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off" onclick=datesview()>
+            <label class="btn btn-outline-dark" for="btnradio3"> 🕔 Rendez-vous </label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio10" autocomplete="off" onclick=farrieryview()>
+            <label class="btn btn-outline-dark" for="btnradio10"> 🐎 Maréchalerie</label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio4" autocomplete="off" onclick=vaxview()>
+            <label class="btn btn-outline-dark" for="btnradio4"> 💉 Vaccins</label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio5" autocomplete="off" onclick=wormview()>
+            <label class="btn btn-outline-dark" for="btnradio5"> 🦑 Vermifuges</label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" onclick=dentistview()>
+            <label class="btn btn-outline-dark" for="btnradio2"> 🍬 Dentiste </label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio12" autocomplete="off" onclick=osteoview()>
+            <label class="btn btn-outline-dark" for="btnradio12"> 💀 Ostéo </label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio6" autocomplete="off" onclick=incidentsview()>
+            <label class="btn btn-outline-dark" for="btnradio6"> 💊 Incidents </label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio7" autocomplete="off" onclick=contestsview()>
+            <label class="btn btn-outline-dark" for="btnradio7"> 🏆 Concours</label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio8" autocomplete="off" onclick=pedigreeview()>
+            <label class="btn btn-outline-dark" for="btnradio8"> 💫 Pedigree</label>
+
+            {% if horse.sex == 'Jument'%}
+              <input type="radio" class="btn-check" name="btnradio" id="btnradio9" autocomplete="off" onclick=breedingview()>
+              <label class="btn btn-outline-dark" for="btnradio9"> 💞 Elevage</label>
+            {% elif horse.sex == 'Etalon'%}
+              <input type="radio" class="btn-check" name="btnradio" id="btnradio9" autocomplete="off" onclick=breedingview()>
+              <label class="btn btn-outline-dark" for="btnradio9"> 💞 Elevage</label>
+            {%endif%}
+          </div>
+        </div>
+
+        <div id="notes" class="cont4" tabindex="0">
+          <h3 class="display-6">Notes <button class="editbutton rounded-pill" id="enotes" onclick=editnotes({{horse.id}}) >Modifier &#128394</button></h3>       
+            {% if not horse.notes %}
+              <p> Aucune note pour le moment.</p>   
+            {% else %}
+              <p> {{horse.notes}}</p>
+            {%endif%} 
+        </div>
+        <div id="notesedit" class="cont4">
+          <h3 class="display-6">Notes <button class="editbutton rounded-pill" id="backnotes" onclick=goback('N')>Retour</button></h3>       
+            <form id="editnt" autocomplete="off">
+            {% csrf_token %}
+            <textarea class="form-control" rows="10" cols="150" id="newnotes" rows="4" cols="50" maxlength="5000">{{horse.notes}}</textarea>
+            <input class="btn btn-primary" id='notes-submit' type="submit" value="Valider"/>
+            </form>
+        </div>
+
+        <div id="vax" class="cont4" tabindex="0">
+          <h3 class="display-6">Vaccins <button class="editbutton rounded-pill" id="evax" onclick=newvaccin({{horse.id}})>Ajouter &#128394</button></h3>  
+          <div style="text-align:right">
+          Année : <div class="btn-group" id="vyearchoice">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="vshowselectyear" data-value="{{actualyear}}">
+                            {{actualyear}}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in yearsprev %}
+                              {% if year == 1111 %}
+                            <li><button class="dropdown-item" type="button" id="vyear+{{year}}" onclick=vacyearview({{year}})>Après</button></li>
+                              {% elif year == 1001 %}
+                                <li><button class="dropdown-item" type="button" id="vyear+{{year}}" onclick=vacyearview({{year}})>Avant</button></li>
+                              {% else %}
+                              <li><button class="dropdown-item" type="button" id="vyear+{{year}}" onclick=vacyearview({{year}})>{{year}}</button></li>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+          </div> 
+          <div class="table-responsive"> 
+          <table class="table table-hover" id="tablevax">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Type</th>
+                <th scope="col">Rappel</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bodyvax">
+            {% for vaccin in vaccins %}
+              <tr id="row+{{vaccin.id}}" class="anime">
+                <th scope="row" id="col1+{{vaccin.id}}" data-value="{{vaccin.date|date:"Y-m-d"}}">{{vaccin.date}}</th>
+                <td id="col2+{{vaccin.id}}" data-value="{{vaccin.kind}}">{{vaccin.kind}}</td>
+                <td id="col3+{{vaccin.id}}" data-value="{{vaccin.next|date:"Y-m-d"}}">{{vaccin.next|default_if_none:""}}</td> 
+                <td id="col4+{{vaccin.id}}">  
+                  <button class="btn btn-light" id="edit+{{vaccin.id}}" title="Modifier" onclick=editvax({{vaccin.id}})>✍</button>
+                  <button class="btn btn-light" id="del+{{vaccin.id}}" title="Supprimer" onclick=deletevax({{vaccin.id}})>❌</button>          
+                </td>
+              </tr>  
+            {% endfor %}          
+          </tbody>
+        </table>   
+      </div>  
+        </div>
+
+        <div id="newvacc" class="cont4">
+          <h3 class="display-6">Ajouter un vaccin <button class="editbutton rounded-pill" id="backvax" onclick=goback('V')>Retour</button></h3>  
+          <div class="warning" id="crwarningvax" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>     
+            <form id="newvax" method="POST" autocomplete="off">
+            {% csrf_token %}
+            {{form2|crispy}} 
+            <input class="btn btn-primary" id='vac-submit' type="submit" value="Ajouter"/>
+            </form>
+        </div>
+
+        <div id="editvacc" class="cont4">
+          <h3 class="display-6">Modifier un vaccin <button class="editbutton rounded-pill" id="backvax" onclick=goback('V')>Retour</button></h3>       
+           <div class="warning" id="warningvax" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div> 
+           <form id="editavaccin" style="width:40%" autocomplete="off">
+           <br>
+           {% csrf_token %}
+           <label for="vaxkind">Type de vaccin</label>
+           <input class="form-control" type="text" id="vaxkind" placeholder="Vaccin" maxlength="200" minlength="1"/>
+           <br>
+           <label for="vaxdate">Date du vaccin</label>
+           <input class="form-control" type="date" id="vaxdate" min="2000-01-01" max="2030-12-31"/>
+           <br>
+           <label for="vaxdaterapp">Date de rappel</label>
+           <input class="form-control" type="date" id="vaxdaterapp" placeholder="Date du rappel" min="2000-01-01" max="2030-12-31"/>
+           <br>
+           <input class="btn btn-primary" id='vaxsubmit' type="submit" value="Modifier"/>
+           </form>
+        </div>
+
+        <div id="wormer" class="cont4" tabindex="0">
+          <h3 class="display-6">Vermifuges <button class="editbutton rounded-pill" id="ewormer" onclick=newdewormer({{horse.id}})>Ajouter &#128394</button></h3> 
+          <div style="text-align:right">
+          Année : <div class="btn-group" id="wyearchoice">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="wshowselectyear" data-value="{{actualyear}}">
+                            {{actualyear}}
+                        </button>
+                         <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in yearsprev %}
+                              {% if year == 1111 %}
+                            <li><button class="dropdown-item" type="button" id="wyear+{{year}}" onclick=dewyearview({{year}})>Après</button></li>
+                              {% elif year == 1001 %}
+                                <li><button class="dropdown-item" type="button" id="wyear+{{year}}" onclick=dewyearview({{year}})>Avant</button></li>
+                              {% else %}
+                              <li><button class="dropdown-item" type="button" id="wyear+{{year}}" onclick=dewyearview({{year}})>{{year}}</button></li>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+          </div>  
+          <div class="table-responsive">
+          <table class="table table-hover" id="tableworm">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Nom</th>
+                <th scope="col">Molécule</th>
+                <th scope="col">Prochain vermifuge</th>
+                <th scope="col">Prochaine date</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bodydew">
+            {% for dewormer in dewormers %}
+              <tr id="wrow+{{dewormer.id}}" class="anime">
+                <th scope="row" id="wcol1+{{dewormer.id}}" data-value="{{dewormer.date|date:"Y-m-d"}}">{{dewormer.date}}</th>
+                <td id="wcol2+{{dewormer.id}}" data-value="{{dewormer.name}}">{{dewormer.name}}</td>
+                <td id="wcol3+{{dewormer.id}}" data-value="{{dewormer.molecule}}">{{dewormer.molecule}}</td>   
+                <td id="wcol4+{{dewormer.id}}" data-value="{{dewormer.nextname}}">{{dewormer.nextname}}</td>   
+                <td id="wcol5+{{dewormer.id}}" data-value="{{dewormer.nextdate|date:"Y-m-d"}}">{{dewormer.nextdate|default_if_none:""}}</td>  
+                <td id="wcol6+{{dewormer.id}}">
+                  <button class="btn btn-light" id="wedit+{{dewormer.id}}" title="Modifier" onclick=editdew({{dewormer.id}})>✍</button>
+                  <button class="btn btn-light" id="wdel+{{dewormer.id}}" title="Supprimer" onclick=deletedew({{dewormer.id}})>❌</button>
+                </td>       
+              </tr>  
+            {% endfor %}          
+          </tbody>
+        </table> 
+      </div>       
+        </div>
+
+        <div id="wormeredit" class="cont4">
+          <h3 class="display-6">Modifier un vermifuge <button class="editbutton rounded-pill" id="backwormer" onclick=goback('W')>Retour</button></h3>       
+            <div class="warning" id="edtwarningdew" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>  
+            <form id="editdew" autocomplete="off">
+            {% csrf_token %}
+            <label for="dewname">Nom du vermifuge :</label>
+           <input class="form-control" type="text" id="dewname" maxlength="30" minlength="1"/>
+           <br>
+           <label for="dewmol">Molécule :</label>
+           <input class="form-control" type="text" id="dewmol" maxlength="50"/>
+           <br>
+           <label for="dewdate">Date de la vermifugation :</label>
+           <input class="form-control" type="date" id="dewdate" min="2010-01-01" max="2030-12-31"/>
+           <br>
+           <label for="dewnamenext">Nom du prochain vermifuge :</label>
+           <input class="form-control" type="text" id="dewnamenext" maxlength="30"/>
+           <br>
+           <label for="dewdatenext">Date du prochain vermifuge :</label>
+           <input class="form-control" type="date" id="dewdatenext" min="2010-01-01"  max="2030-12-31"/>
+           <br>
+           <input class="btn btn-primary" id='dewsubmit' type="submit" value="Modifier"/>
+            </form>
+        </div>
+
+        <div id="wormernew" class="cont4">
+          <h3 class="display-6">Ajouter un vermifuge <button class="editbutton rounded-pill" id="backwormer" onclick=goback('W')>Retour</button></h3>       
+            <div class="warning" id="crwarningdew" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>     
+            <form id="newdew" method="POST" autocomplete="off">
+            {% csrf_token %}
+            {{form4|crispy}} 
+            <input class="btn btn-primary" id='dew-submit' type="submit" value="Ajouter"/>
+            </form>
+        </div>
+
+
+        <div id="incidents" class="cont4" tabindex="0">
+          <h3 class="display-6">Incidents <button class="editbutton rounded-pill" id="eincidents" onclick=addincident({{horse.id}})>Ajouter &#128394</button></h3>       
+          <div style="text-align:right">
+            Année : <div class="btn-group" id="incyearchoice">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="incshowselectyear" data-value="{{actualyear}}">
+                              {{actualyear}}
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                              {% for year in years %}
+                                {% if year == 1000 %}
+                              <li><button class="dropdown-item" type="button" id="incyear+{{year}}" onclick=incyearview({{year}})>Avant</button></li>
+                                {% else %}
+                                  <li><button class="dropdown-item" type="button" id="incyear+{{year}}" onclick=incyearview({{year}})>{{year}}</button></li>
+                                {% endif %}
+                              {% endfor %}
+                          </ul>
+                      </div>
+            </div>  
+            <div class="table-responsive">
+            <table class="table table-hover" id="tableinc">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Motif</th>
+                  <th scope="col" style="width:40%">Diagnostic</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyinc">
+              {% for incident in incidents %}
+                <tr id="incrow+{{incident.id}}" class="anime">
+                  <th scope="row" id="inccol1+{{incident.id}}" data-value="{{incident.date|date:"Y-m-d"}}">{{incident.date}}</th>
+                  <td id="inccol2+{{incident.id}}" data-value="{{incident.reason}}">{{incident.reason}}</td>
+                  <td id="inccol3+{{incident.id}}" data-value="{{incident.diagnostic}}">{{incident.diagnostic}}</td>   
+                  <td id="inccol4+{{incident.id}}"> 
+                    <button class="btn btn-light" id="invview+{{incident.id}}" title="Voir en détail" data-bs-toggle="modal" data-bs-target="#IncModal{{incident.id}}">📖</button>
+                    <button class="btn btn-light" id="incedit+{{incident.id}}" title="Modifier" onclick=editincident({{incident.id}})>✍</button>
+                    <button class="btn btn-light" id="incdel+{{incident.id}}" title="Supprimer" onclick=deleteincident({{incident.id}})>❌</button>          
+                  </td>                
+                </tr>  
+              {% endfor %}          
+            </tbody>
+          </table>  
+        </div>
+          <!-- create a modal for each incident --> 
+          {% for incident in incidents %}
+          <div class="modal fade" id="IncModal{{incident.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="LabelInc{{incident.id}}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="LabelInc{{incident.id}}">Rapport d'incident du {{incident.date}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div> Motif initial : <p id="IncMreason+{{incident.id}}">{{incident.reason}} </p></div>
+                    <br>
+                    <div> Vétérinaire et/ou autres intervenants : <p id="IncMvet+{{incident.id}}" data-value="{{incident.vet}}"> {{incident.vet}} </p></div>
+                    <br>
+                    <div> Diagnostic : <p id="IncMdiag+{{incident.id}}"> {{incident.diagnostic}} </p></div>
+                    <br>
+                    <div> Prescription : <p id="IncMpre+{{incident.id}}" data-value="{{incident.prescription}}"> {{incident.prescription}} </p></div>
+                    <br>
+                    <div> Notes : <p id="IncMn+{{incident.id}}" data-value="{{incident.notes}}"> {{incident.notes}} </p></div>
+                    <br>
+        
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick=editincident({{incident.id}})>Editer</button>
+                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fermer</button> 
+                </div>
+                </div>
+            </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div id="newincident" class="cont4">
+          <h3 class="display-6">Ajouter un incident <button class="editbutton rounded-pill" id="backinc" onclick=goback('IC')>Retour</button></h3>       
+          <div class="warning" id="crwarninginc" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>     
+            <form id="newinc" method="POST" autocomplete="off">
+            {% csrf_token %}
+            {{form8|crispy}} 
+            <input class="btn btn-primary" id='inc-submit' type="submit" value="Ajouter"/>
+            </form>
+        </div>
+
+        <div id="incidentsedit" class="cont4">
+          <h3 class="display-6">Modifier un incident <button class="editbutton rounded-pill" id="backincidents" onclick=goback('IC')>Retour</button></h3>       
+          <div id="edtwarninginc" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtinc" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="inc_d">Date : *</label>
+              <input class="form-control" type="date" id="inc_d"  min="2000-01-01" max="{{nextyear}}-12-31"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="inc_mo">Motif : *</label>
+              <input class="form-control" type="text" id="inc_mo" maxlength="50" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <label for="inc_v">Vétérinaire ou intervenant :</label>
+           <input class="form-control" type="text" id="inc_v" maxlength="150" default="Non spécifié"/>
+           <br>
+           <label for="inc_diag">Diagnostic :</label>
+           <input class="form-control" type="text" id="inc_diag" maxlength="1000"/>
+           <br>
+           <label for="inc_pre">Prescription :</label>
+           <input class="form-control" type="text" id="inc_pre" maxlength="2000"/>
+           <br>
+           <label for="inc_n">Notes :</label>
+           <input class="form-control" type="text" id="inc_n" maxlength="3000"/>
+           <br>
+           <input class="btn btn-primary" id='inc2_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+
+        <div id="concours" class="cont4" tabindex="0">
+          <h3 class="display-6">Concours <button class="editbutton rounded-pill" id="econcours" onclick=addcontest({{horse.id}})>Ajouter &#128394</button></h3>     
+           <div style="text-align:right">
+          Année : <div class="btn-group" id="ccyearchoice">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="ccshowselectyear" data-value="{{actualyear}}">
+                            {{actualyear}}
+                        </button>
+                         <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in yearsprev %}
+                              {% if year == 1111 %}
+                            <li><button class="dropdown-item" type="button" id="ccyear+{{year}}" onclick=contestyearview({{year}})>Après</button></li>
+                              {% elif year == 1001 %}
+                                <li><button class="dropdown-item" type="button" id="ccyear+{{year}}" onclick=contestyearview({{year}})>Avant</button></li>
+                              {% else %}
+                              <li><button class="dropdown-item" type="button" id="ccyear+{{year}}" onclick=contestyearview({{year}})>{{year}}</button></li>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+          </div> 
+          <div class="table-responsive">
+        <table class="table table-hover" id="tablecc">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Discipline</th>
+                <th scope="col">Epreuve</th>
+                <th scope="col">Cavalier</th>
+                <th scope="col">Lieu</th>
+                <th scope="col">Résultats</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bodycontest">
+            {% for contest in contests %}
+              <tr id="ccrow+{{contest.id}}" class="anime">
+                <th scope="row" id="cccol1+{{contest.id}}" data-value="{{contest.date|date:"Y-m-d"}}">{{contest.date}}</th>
+                <td id="cccol2+{{contest.id}}" data-value="{{contest.discipline}}">{{contest.discipline}}</td>
+                <td id="cccol3+{{contest.id}}" data-value="{{contest.division}}">{{contest.division}}</td>   
+                <td id="cccol4+{{contest.id}}" data-value="{{contest.rider}}">{{contest.rider}}</td>   
+                <td id="cccol5+{{contest.id}}" data-value="{{contest.place}}">{{contest.place}}</td> 
+                <td id="cccol6+{{contest.id}}" data-value="{{contest.result}}">{{contest.result}}</td>  
+                <td id="cccol7+{{contest.id}}">
+                  <button class="btn btn-light" id="ccedit+{{contest.id}}" title="Modifier" onclick=editcontest({{contest.id}})>✍</button>
+                  <button class="btn btn-light" id="ccdel+{{contest.id}}" title="Supprimer" onclick=deletecontest({{contest.id}})>❌</button>
+                </td>       
+              </tr>  
+            {% endfor %}          
+          </tbody>
+        </table>
+      </div>
+        </div>
+
+        <div id="concoursedit" class="cont4">
+          <h3 class="display-6">Modifier un concours <button class="editbutton rounded-pill" id="backconcours" onclick=goback('C')>Retour</button></h3>       
+          <div id="edtwarningcc" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtcc" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="cc_d">Date : *</label>
+              <input class="form-control" type="date" id="cc_d"  min="2000-01-01" max="2030-12-31"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="cc_l">Lieu : *</label>
+              <input class="form-control" type="text" id="cc_l" maxlength="80" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="cc_dp">Discipline :</label>
+              <input class="form-control" type="text" id="cc_dp" maxlength="10"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="cc_ep">Epreuve :</label>
+              <input class="form-control" type="text" id="cc_ep" maxlength="20"/>
+            </div>
+           </div>
+           <br>
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="cc_r">Cavalier :</label>
+              <input class="form-control" type="text" id="cc_r" maxlength="40"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="cc_rst">Résultats :</label>
+              <input class="form-control" type="text" id="cc_rst" maxlength="15"/>
+            </div>
+           </div>
+           <br>
+           <input class="btn btn-primary" id='cc2_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+        <div id="concoursnew" class="cont4">
+          <h3 class="display-6">Ajouter un concours <button class="editbutton rounded-pill" id="backconcours" onclick=goback('C')>Retour</button></h3>       
+          <div class="warning" id="crwarningcc" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>     
+            <form id="newcc" method="POST" autocomplete="off">
+            {% csrf_token %}
+            {{form7|crispy}} 
+            <input class="btn btn-primary" id='cc-submit' type="submit" value="Ajouter"/>
+            </form>
+        </div>
+
+
+
+        <div id="farriery" class="cont4" tabindex="0">
+          <h3 class="display-6">Maréchalerie <button class="editbutton rounded-pill" id="efarrier" onclick=newfarriery({{horse.id}})>Ajouter &#128394</button></h3> 
+          <div style="text-align:right">
+          Année : <div class="btn-group" id="myearchoice">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="mshowselectyear" data-value="{{actualyear}}">
+                            {{actualyear}}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in yearsprev %}
+                              {% if year == 1111 %}
+                            <li><button class="dropdown-item" type="button" id="myear+{{year}}" onclick=farryearview({{year}})>Après</button></li>
+                              {% elif year == 1001 %}
+                                <li><button class="dropdown-item" type="button" id="myear+{{year}}" onclick=farryearview({{year}})>Avant</button></li>
+                              {% else %}
+                              <li><button class="dropdown-item" type="button" id="myear+{{year}}" onclick=farryearview({{year}})>{{year}}</button></li>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+          </div> 
+          <div class="table-responsive">
+          <table class="table table-hover" id="tablefarr">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Maréchal</th>
+                <th scope="col" style="width:40%">Ferrure</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bodyfarr">
+            {% for far in farrs %}
+              <tr id="mrow+{{far.id}}" class="anime">
+                <th scope="row" id="mcol1+{{far.id}}" data-value="{{far.date|date:"Y-m-d"}}">{{far.date}}</th>
+                <td id="mcol2+{{far.id}}" data-value="{{far.farrier}}">{{far.farrier}}</td>
+                <td id="mcol3+{{far.id}}" data-value="{{far.type}}">{{far.type}}</td>   
+                <td id="mcol4+{{far.id}}">  
+                  <button class="btn btn-light" id="fedit+{{far.id}}" title="Modifier" onclick=editfarriery({{far.id}})>✍</button>
+                  <button class="btn btn-light" id="fdel+{{far.id}}" title="Supprimer" onclick=deletefarriery({{far.id}})>❌</button>          
+                </td>                
+              </tr>  
+            {% endfor %}          
+          </tbody>
+        </table>     
+      </div>         
+        </div>
+
+        <div id="farrierynew" class="cont4">
+          <h3 class="display-6"> Ajouter <button class="editbutton rounded-pill" id="backfarrier" onclick=goback('M')>Retour</button></h3> 
+          <div id="crwarningfarr" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="newfarr" method='POST' autocomplete="off"> 
+          {% csrf_token %}
+          {{form3|crispy}}
+          <input class="btn btn-primary" id='m_submit' type="submit" value="Ajouter"/>
+          </form>     
+        </div>
+
+        <div id="farrieryedit" class="cont4">
+          <h3 class="display-6">Modifier <button class="editbutton rounded-pill" id="backfarrier" onclick=goback('M')>Retour</button></h3>       
+          <div id="edtwarningfarr" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edfarr" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="m_d">Date : *</label>
+              <input class="form-control" type="date" id="m_d"  min="2000-01-01" max="2030-12-31"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="m_f">Maréchal :</label>
+              <input class="form-control" type="text" id="m_f" maxlength="200" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <label for="m_n">Type de ferrure et notes : </label>
+           <input class="form-control" type="text" id="m_n"  default="Non spécifié" maxlength="300"/>
+           <br>
+           <input class="btn btn-primary" id='m_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+
+
+        <div id="dates" class="cont4" tabindex="0">
+          <h3 class="display-6">Rendez-vous <button class="editbutton rounded-pill" id="edates" onclick="newdates({{horse.id}})">Ajouter &#128394</button>
+          </h3>    
+          <div style="text-align:right">
+          Année : <div class="btn-group" id="dyearchoice">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="dshowselectyear" data-value="{{actualyear}}">
+                            {{actualyear}}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in yearsdate %}
+                              {% if year == 1111 %}
+                            <li><button class="dropdown-item" type="button" id="dyear+{{year}}" onclick=dateyearview({{year}})>Après</button></li>
+                              {% else %}
+                              <li><button class="dropdown-item" type="button" id="dyear+{{year}}" onclick=dateyearview({{year}})>{{year}}</button></li>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+          </div>   
+          <div class="table-responsive">
+          <table class="table table-hover" id="tabledates">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Intervenant</th>
+                <th scope="col" style="width:40%">Raison</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bodydates">
+            {% for date in dates %}
+              <tr id="drow+{{date.id}}" class="anime">
+                <th scope="row" id="dcol1+{{date.id}}" data-value="{{date.date|date:"Y-m-d"}}" hours-value="{{date.date|date:"H"}}" minutes-value="{{date.date|date:"i"}}">{{date.date}}</th>
+                <td id="dcol2+{{date.id}}" data-value="{{date.other}}">{{date.other}}</td>
+                <td id="dcol3+{{date.id}}" data-value="{{date.reason}}">{{date.reason}}</td>   
+                <td id="dcol4+{{date.id}}">  
+                  <button class="btn btn-light" id="dedit+{{date.id}}" title="Modifier" onclick=editdate({{date.id}})>✍</button>
+                  <button class="btn btn-light" id="ddel+{{date.id}}" title="Supprimer" onclick=deletedate({{date.id}})>❌</button>          
+                </td>                
+              </tr>  
+            {% endfor %}          
+          </tbody>
+        </table>    
+      </div>    
+        </div>
+
+        <div id="datesedit" class="cont4">
+        <h3 class="display-6">Modifier un rendez-vous <button class="editbutton rounded-pill" id="backdates" onclick=goback('D')>Retour</button></h3>       
+          <div id="edtwarningdate" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtdate" method="POST" autocomplete="off">
+          {% csrf_token %}
+          <label for="de_r">Motif : *</label>
+           <input class="form-control" type="text" id="de_r"  default="Non spécifié" maxlength="300" minlength="1"/>
+           <br>
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="de_dt">Date et heure : *</label>
+              <input class="form-control" type="datetime-local" id="de_dt"  min="2021-01-01T00:00" max="2025-12-31T23:59"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="de_i">Intervenant :</label>
+              <input class="form-control" type="text" id="de_i" />
+            </div>
+           </div>
+           <br>
+           <input class="btn btn-primary" id='de_submit' type="submit" value="Ajouter"/>
+          </form>
+        </div>
+
+        <div id="datesnew" class="cont4">
+        <h3 class="display-6">Ajouter un rendez-vous <button class="editbutton rounded-pill" id="backdates2" onclick=goback('D')>Retour</button></h3>       
+          <div id="crwarningdate" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="newdate" method="POST" autocomplete="off">
+          {% csrf_token %}
+          <label for="d_r">Motif : * </label>
+           <input class="form-control" type="text" id="d_r" default="Non spécifié" maxlength="300" minlength="1"/>
+           <br>
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="d_dt">Date et heure : *</label>
+              <input class="form-control" type="datetime-local" id="d_dt"  min="2021-01-01T00:00" max="2025-12-31T23:59"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="d_i">Intervenant :</label>
+              <input class="form-control" type="text" id="d_i" />
+            </div>
+           </div>
+           <br>
+           <input class="btn btn-primary" id='d_submit' type="submit" value="Ajouter"/>
+          </form>
+        </div>
+
+
+        <div id="osteo" class="cont4" tabindex="0">
+          <h3 class="display-6">Ostéopathie <button class="editbutton rounded-pill" id="craddo" onclick=addosteo({{horse.id}}) >Ajouter &#128394</button></h3>
+          <div style="text-align:right">
+          Année : <div class="btn-group" id="osyearchoice">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="osshowselectyear" data-value="{{actualyear}}">
+                            {{actualyear}}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in years %}
+                              {% if year == 1000 %}
+                            <li><button class="dropdown-item" type="button" id="osyear+{{year}}" onclick=osteoyearview({{year}})>Avant</button></li>
+                              {% else %}
+                              <li><button class="dropdown-item" type="button" id="osyear+{{year}}" onclick=osteoyearview({{year}})>{{year}}</button></li>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+          </div> 
+          <div class="table-responsive">
+          <table class="table table-hover" id="tableosteo">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Ostéopathe</th>
+                <th scope="col" style="width:30%">Diagnostic</th>
+                <th scope="col" style="width:30%">Rééducation</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bodyosteo">
+            {% for osteo in osteos %}
+              <tr id="osrow+{{osteo.id}}" class="anime">
+                <th scope="row" id="oscol1+{{osteo.id}}" data-value="{{osteo.date|date:"Y-m-d"}}">{{osteo.date}}</th>
+                <td id="oscol2+{{osteo.id}}" data-value="{{osteo.osteo}}">{{osteo.osteo}}</td>
+                <td id="oscol3+{{osteo.id}}" data-value="{{osteo.diagnostic}}">{{osteo.diagnostic}}</td>
+                <td id="oscol4+{{osteo.id}}" data-value="{{osteo.reeducation}}">{{osteo.reeducation}}</td>   
+                <td id="oscol5+{{osteo.id}}">  
+                  <button class="btn btn-light" id="osedit+{{osteo.id}}" title="Modifier" onclick=editosteo({{osteo.id}})>✍</button>
+                  <button class="btn btn-light" id="osdel+{{osteo.id}}" title="Supprimer" onclick=deleteosteo({{osteo.id}})>❌</button>          
+                </td>                
+              </tr>  
+            {% endfor %}          
+          </tbody>
+        </table>     
+      </div>
+        </div>
+
+        <div id="osteoedit" class="cont4">
+        <h3 class="display-6">Modifier une séance d'ostéopathie <button class="editbutton rounded-pill" id="backo" onclick=goback('O')>Retour</button></h3>       
+          <div id="edtwarningos" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtos" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="os_d">Date : *</label>
+              <input class="form-control" type="date" id="os_d"  min="2000-01-01" max="{{nextyear}}-12-31"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="os_o">Ostéopathe :</label>
+              <input class="form-control" type="text" id="os_o" maxlength="200" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <label for="os_diag">Diagnostic : </label>
+           <input class="form-control" type="text" id="os_diag" maxlength="2000"/>
+           <br>
+           <label for="os_reed">Protocole de rééducation : </label>
+           <input class="form-control" type="text" id="os_reed" maxlength="2000"/>
+           <br>
+           <input class="btn btn-primary" id='os2_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+        <div id="osteonew" class="cont4">
+        <h3 class="display-6">Ajouter une séance d'ostéopathie<button class="editbutton rounded-pill" id="backo" onclick=goback('O')>Retour</button></h3> 
+        <div id="crwarningos" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="newos" method='POST' autocomplete="off"> 
+          {% csrf_token %}
+          {{form6|crispy}}
+          <input class="btn btn-primary" id='os_submit' type="submit" value="Ajouter"/>
+          </form>     
+        </div>
+
+
+        <div id="dentist" class="cont4" tabindex="0">
+          <h3 class="display-6">Dentisterie <button class="editbutton rounded-pill" id="cradddt" onclick=newdentistry({{horse.id}}) >Ajouter &#128394</button></h3>
+          <div style="text-align:right">
+          Année : <div class="btn-group" id="dtyearchoice">
+                        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="dtshowselectyear" data-value="{{actualyear}}">
+                            {{actualyear}}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in years %}
+                              {% if year == 1000 %}
+                            <li><button class="dropdown-item" type="button" id="dtyear+{{year}}" onclick=dentyearview({{year}})>Avant</button></li>
+                              {% else %}
+                                <li><button class="dropdown-item" type="button" id="dtyear+{{year}}" onclick=dentyearview({{year}})>{{year}}</button></li>
+                              {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+          </div> 
+          <div class="table-responsive"> 
+          <table class="table table-hover" id="tabledent">
+            <thead>
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Dentiste</th>
+                <th scope="col" style="width:40%">Diagnostic</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="bodydent">
+            {% for dent in dents %}
+              <tr id="dtrow+{{dent.id}}" class="anime">
+                <th scope="row" id="dtcol1+{{dent.id}}" data-value="{{dent.date|date:"Y-m-d"}}">{{dent.date}}</th>
+                <td id="dtcol2+{{dent.id}}" data-value="{{dent.dentist}}">{{dent.dentist}}</td>
+                <td id="dtcol3+{{dent.id}}" data-value="{{dent.diagnostic}}">{{dent.diagnostic}}</td>   
+                <td id="dtcol4+{{dent.id}}">  
+                  <button class="btn btn-light" id="dtedit+{{dent.id}}" title="Modifier" onclick=editdentistry({{dent.id}})>✍</button>
+                  <button class="btn btn-light" id="dydel+{{dent.id}}" title="Supprimer" onclick=deletedentistry({{dent.id}})>❌</button>          
+                </td>                
+              </tr>  
+            {% endfor %}          
+          </tbody>
+        </table>    
+      </div>   
+        </div>
+
+        <div id="dentistedit" class="cont4">
+        <h3 class="display-6">Modifier une séance de dentisterie <button class="editbutton rounded-pill" id="backdt" onclick=goback('DT')>Retour</button></h3>       
+          <div id="edtwarningdent" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtdent" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="dt_d">Date : *</label>
+              <input class="form-control" type="date" id="dt_d" min="2000-01-01" max="{{nextyear}}-12-31"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="dt_de">Dentiste :</label>
+              <input class="form-control" type="text" id="dt_de" maxlength="200" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <label for="dt_diag">Diagnostic : </label>
+           <input class="form-control" type="text" id="dt_diag" maxlength="2000"/>
+           <br>
+           <input class="btn btn-primary" id='dt2_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+        <div id="dentistnew" class="cont4">
+        <h3 class="display-6">Ajouter une séance de dentisterie <button class="editbutton rounded-pill" id="backdt" onclick=goback('DT')>Retour</button></h3> 
+        <div id="crwarningdent" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="newdent" method='POST' autocomplete="off"> 
+          {% csrf_token %}
+          {{form5|crispy}}
+          <input class="btn btn-primary" id='dt_submit' type="submit" value="Ajouter"/>
+          </form>     
+        </div>
+
+      
+      <div id="pedig" class="cont4" tabindex="0">
+        <h3 class="display-6"> Pedigree <button class="editbutton rounded-pill" id="epedig" onclick=editpedigree({{horse.id}}) >Modifier &#128394</button></h3>
+        <div id="wrapper"><span class="label">{{horse.name}}</span>
+          <div class="branch"><!-- generation 1 -->
+            
+            <div class="entry"><span class="label" id="shsire" data-value="{{horse.sire}}">&#9794 {{horse.sire}}</span>
+              <div class="branch"><!-- generation 2 -->
+                <div class="entry"><span class="label" style="max-width:400px" id="shsiresire" data-value="{{horse.siresire}}">&#9794 {{horse.siresire}}</span></div>
+                <div class="entry"><span class="label" style="max-width:400px" id="shsiredam" data-value="{{horse.siredam}}">&#9792 {{horse.siredam}}</span></div>
+              </div><!-- end generation 2 -->
+            </div>
+            
+            <div class="entry"><span class="label" id="shdam" data-value="{{horse.dam}}">&#9792 {{horse.dam}}</span>
+              <div class="branch"><!-- generation 2 -->
+                <div class="entry"><span class="label" style="max-width:400px" id="shdamsire" data-value="{{horse.damsire}}">&#9794 {{horse.damsire}}</span></div>
+                <div class="entry"><span class="label" style="max-width:400px" id="shdamdam" data-value="{{horse.damdam}}">&#9792 {{horse.damdam}}</span></div>
+              </div><!-- end generation 2 -->
+            </div>
+          </div><!-- end generation 1 -->
+        </div>
+      </div>
+
+      <div id="editpedig" class="cont4">
+      <h3 class="display-6"> Editer le pedigree de {{horse.name}} <button class="editbutton rounded-pill" id="backped" onclick=goback('PE')>Retour</button></h3>
+      <div id="edtwarningpedi"></div>
+      <form id="edtpedi" autocomplete="off">
+      <div id="wrapper"><span class="label">{{horse.name}}</span>
+          <div class="branch"><!-- generation 1 -->
+            
+            <div class="entry"><span class="label"><input class="form-control" type="text" id="hsire" placeholder="Père" maxlength="80"/></span>
+              <div class="branch"><!-- generation 2 -->
+                <div class="entry"><span class="label" style="max-width:400px"><input class="form-control" type="text" id="hsiresire" placeholder="Père de père" maxlength="80"/></span></div>
+                <div class="entry"><span class="label" style="max-width:400px"><input class="form-control" type="text" id="hsiredam" placeholder="Mère de père" maxlength="80"/></span></div>
+              </div><!-- end generation 2 -->
+            </div>
+            
+            <div class="entry"><span class="label"><input class="form-control" type="text" id="hdam" placeholder="Mère" maxlength="80"/></span>
+              <div class="branch"><!-- generation 2 -->
+                <div class="entry"><span class="label" style="max-width:400px"><input class="form-control" type="text" id="hdamsire" placeholder="Père de mère" maxlength="80"/></span></div>
+                <div class="entry"><span class="label" style="max-width:400px"><input class="form-control" type="text" id="hdamdam" placeholder="Mère de mère" maxlength="80"/></span></div>
+              </div><!-- end generation 2 -->
+            </div>
+          </div><!-- end generation 1 -->
+        </div>
+        <input class="btn btn-primary" id='pedig_submit' type="submit" value="Editer"/>
+      </form>
+      </div>
+
+
+      {% if horse.sex == 'Jument'%}
+
+        <div id="gestations" class="cont4" tabindex="0">
+          <h3 class="display-6">Gestations <button class="editbutton rounded-pill" id="egestations" onclick=addgestation({{horse.id}})>Ajouter &#128394</button></h3> 
+          <div style="text-align:right">
+            Année : <div class="btn-group" id="gestyearchoice">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="gestshowselectyear" data-value="{{actualyear}}">
+                              {{actualyear}}
+                          </button>
+                           <ul class="dropdown-menu dropdown-menu-end">
+                              {% for year in years %}
+                                {% if year == 1000 %}
+                                  <li><button class="dropdown-item" type="button" id="gestyear+{{year}}" onclick=gestyearview({{year}})>Avant</button></li>
+                                {% else %}
+                                <li><button class="dropdown-item" type="button" id="gestyear+{{year}}" onclick=gestyearview({{year}})>{{year}}</button></li>
+                                {% endif %}
+                              {% endfor %}
+                          </ul>
+                      </div>
+            </div> 
+            <div class="table-responsive">
+            <table class="table table-hover" id="tablegest">
+              <thead>
+                <tr>
+                  <th scope="col">Date début</th>
+                  <th scope="col">Date finale prévisionnelle</th>
+                  <th scope="col">Date finale</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodygest">
+              {% for gest in gestations %}
+                <tr id="gtrow+{{gest.id}}" class="anime">
+                  <th scope="row" id="gtcol1+{{gest.id}}" data-value="{{gest.datestart|date:"Y-m-d"}}">{{gest.datestart}}</th>
+                  <td id="gtcol2+{{gest.id}}" data-value="{{gest.dateend|date:"Y-m-d"}}">{{gest.dateend|default_if_none:""}}</td>
+                  <td id="gtcol3+{{gest.id}}" data-value="{{gest.realend|date:"Y-m-d"}}">{{gest.realend|default_if_none:""}}</td>   
+                  <td id="gtcol4+{{gest.id}}">
+                    <button class="btn btn-light" id="gestview+{{gest.id}}" title="Voir en détail" data-bs-toggle="modal" data-bs-target="#GestModal{{gest.id}}">📖</button>
+                    <button class="btn btn-light" id="gtedit+{{gest.id}}" title="Modifier" onclick=editgestation({{gest.id}})>✍</button>
+                    <button class="btn btn-light" id="gtdel+{{gest.id}}" title="Supprimer" onclick=deletegestation({{gest.id}})>❌</button>
+                  </td>       
+                </tr>  
+              {% endfor %}          
+            </tbody>
+          </table>
+        </div>
+          <!-- create a modal for each gestation --> 
+          {% for gest in gestations %}
+          <div class="modal fade" id="GestModal{{gest.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="LabelGest{{gest.id}}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="LabelGest{{gest.id}}">Rapport de gestation débutée le {{gest.datestart}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div> Date de fin prévisionnelle (calculée initialement sur une moyenne de 340 jours) : <p id="GestMdateend+{{gest.id}}" data-value="{{gest.dateend|date:"Y-m-d"}}"> {{gest.dateend|default_if_none:""}} </p></div>
+                  <br>
+                  <div> Date de fin : <p id="Gestrealend+{{gest.id}}" data-value="{{gest.realend|date:"Y-m-d"}}"> {{gest.realend|default_if_none:""}} </p></div>
+                  <br>
+                    <div> Vétérinaire et/ou autres intervenants : <p id="GestMvet+{{gest.id}}" data-value="{{gest.vet}}"> {{gest.vet}} </p></div>
+                    <br>
+                    <div> Echographie 1 : <p id="GestMecho1+{{gest.id}}" data-value="{{gest.echo1|date:"Y-m-d"}}"> {{gest.echo1|default_if_none:""}} </p></div>
+                    <br>
+                    <div> Echographie 2 : <p id="GestMecho2+{{gest.id}}" data-value="{{gest.echo2|date:"Y-m-d"}}"> {{gest.echo2|default_if_none:""}} </p></div>
+                    <br>
+                    <div> Echographie 3 : <p id="GestMecho3+{{gest.id}}" data-value="{{gest.echo3|date:"Y-m-d"}}"> {{gest.echo3|default_if_none:""}} </p></div>
+                    <br>
+                    <div> Notes : <p id="GestMnotes+{{gest.id}}" data-value="{{gest.notes}}"> {{gest.notes}} </p></div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick=editgestation({{gest.id}})>Editer</button>
+                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Fermer</button> 
+                </div>
+                </div>
+            </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <div id="gestationsedit" class="cont4">
+          <h3 class="display-6">Editer une gestation <button class="editbutton rounded-pill" id="backgestations" onclick=goback('G')>Retour</button></h3>       
+          <div id="edtwarninggt" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés, les autres sont optionnels. La date prévisionnelle de fin de gestation, les échographies et la date réelle de fin de gestation doivent être ultérieures à la date de début de gestation.</p></div>
+          <form id="edtgest" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="gt_ds">Date de début de gestation (si modifiée, la date prévisionnelle sera recalculée automatiquement): *</label>
+              <input class="form-control" type="date" id="gt_ds" />
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="gt_de">Date prévisionnelle de fin de gestation (calculée sur une base de 340 jours) : </label>
+              <input class="form-control" type="date" id="gt_de" />
+            </div>
+           </div>
+           <br>
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="gt_re">Date de fin réelle : </label>
+              <input class="form-control" type="date" id="gt_re" />
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="gt_v">Vétérinaire suivant la gestation : </label>
+              <input class="form-control" type="text" id="gt_v" maxlength="200" minlength="1" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <div class="row">
+             <p>Les échographies, si précisées, doivent être indiquées dans l'ordre chronologique.</p>
+            <div class="col-lg-3 col-md-3">
+              <label for="gt_e1">Echographie 1 : </label>
+              <input class="form-control" type="date" id="gt_e1" min="2000-01-01" max="2030-12-31"/>
+            </div>
+            <div class="col-lg-3 col-md-3">
+              <label for="gt_e2">Echographie 2 : </label>
+              <input class="form-control" type="date" id="gt_e2" min="2000-01-01" max="2030-12-31"/>
+            </div>
+            <div class="col-lg-3 col-md-3">
+              <label for="gt_e3">Echographie 3 : </label>
+              <input class="form-control" type="date" id="gt_e3" min="2000-01-01" max="2030-12-31"/>
+            </div>
+           </div>
+           <br>
+           <label for="gt_n">Notes : </label>
+              <input class="form-control" type="text" id="gt_n" maxlength="4000"/>
+           <br>
+           <input class="btn btn-primary" id='gt2_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+        <div id="gestationsnew" class="cont4">
+          <h3 class="display-6">Ajouter une gestation <button class="editbutton rounded-pill" id="backgestations" onclick=goback('G')>Retour</button></h3>       
+          <div id="crwarninggt" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés, les autres sont optionnels. Une date de fin prévisionnelle de la gestation sera calculée sur une moyenne de 340 jours. Vous pourrez modifier cette date par la suite si vous le souhaitez. Les échographies, si indiquées, doivent être saisies dans l'ordre chronologique et doivent être ultérieures à la date de début de gestation.</p></div>
+            <form id="newgt" method='POST' autocomplete="off"> 
+              {% csrf_token %}
+              {{form12|crispy}}
+              <input class="btn btn-primary" id='gt_submit' type="submit" value="Ajouter"/>
+            </form>
+        </div>
+        
+
+        <div id="heats" class="cont4" tabindex="0">
+          <br>
+          <hr>
+          <br>
+          <h3 class="display-6">Chaleurs <button class="editbutton rounded-pill" id="eheats" onclick=addheat({{horse.id}})>Ajouter &#128394</button></h3>    
+          <div style="text-align:right">
+            Année : <div class="btn-group" id="htyearchoice">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="htshowselectyear" data-value="{{actualyear}}">
+                              {{actualyear}}
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                            {% for year in yearsdate %}
+                            {% if year == 1111 %}
+                          <li><button class="dropdown-item" type="button" id="htyear+{{year}}" onclick=htyearview({{year}})>Après</button></li>
+                            {% else %}
+                            <li><button class="dropdown-item" type="button" id="htyear+{{year}}" onclick=htyearview({{year}})>{{year}}</button></li>
+                            {% endif %}
+                          {% endfor %}
+                          </ul>
+                      </div>
+            </div> 
+            <div class="table-responsive">
+            <table class="table table-hover" id="tableheat">
+              <thead>
+                <tr>
+                  <th scope="col">Date de début</th>
+                  <th scope="col">Date de fin</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodyheat">
+              {% for heat in heats %}
+                <tr id="htrow+{{heat.id}}" class="anime">
+                  <th scope="row" id="htcol1+{{heat.id}}" data-value="{{heat.datestart|date:"Y-m-d"}}">{{heat.datestart}}</th>
+                  <td id="htcol2+{{heat.id}}" data-value="{{heat.dateend|date:"Y-m-d"}}">{{heat.dateend|default_if_none:""}}</td>
+                  <td id="htcol3+{{heat.id}}">  
+                    <button class="btn btn-light" id="htedit+{{heat.id}}" title="Modifier" onclick=editheat({{heat.id}})>✍</button>
+                    <button class="btn btn-light" id="htdel+{{heat.id}}" title="Supprimer" onclick=deleteheat({{heat.id}})>❌</button>          
+                  </td>                
+                </tr>  
+              {% endfor %}          
+            </tbody>
+          </table>     
+        </div>       
+        </div>
+
+        <div id="heatsedit" class="cont4">
+          <h3 class="display-6">Modifier<button class="editbutton rounded-pill" id="backheats" onclick=goback('H')>Retour</button></h3>       
+          <div id="edtwarninght" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtht" style="width:40%" autocomplete="off">
+          {% csrf_token %}      
+          <label for="ht_db"> Date de début des chaleurs : *</label>
+          <input class="form-control" type="date" id="ht_db" min="2021-01-01" max="2030-12-31"/>
+           <br>
+           <label for="ht_df"> Date de fin des chaleurs : </label>
+           <input class="form-control" type="date" id="ht_df" min="2021-01-01" max="2030-12-31"/>
+           <br>
+           <input class="btn btn-primary" id='ht2_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+        <div id="heatsnew" class="cont4">
+          <h3 class="display-6">Ajouter<button class="editbutton rounded-pill" id="backheats" onclick=goback('H')>Retour</button></h3>       
+          <div id="crwarninght" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+            <form id="newht" method='POST' autocomplete="off"> 
+              {% csrf_token %}
+              {{form11|crispy}}
+              <input class="btn btn-primary" id='ht_submit' type="submit" value="Ajouter"/>
+            </form>
+        </div>
+
+
+        <div id="breeds" class="cont4" tabindex="0">
+          <br>
+          <hr>
+          <br>
+          <h3 class="display-6">Saillies <button class="editbutton rounded-pill" id="ebreeds" onclick=addbredm({{horse.id}}) >Ajouter &#128394</button></h3> 
+          <div style="text-align:right">
+            Année : <div class="btn-group" id="bdyearchoice">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="bdshowselectyear" data-value="{{actualyear}}">
+                              {{actualyear}}
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                              {% for year in yearsprev %}
+                              {% if year == 1111 %}
+                              <li><button class="dropdown-item" type="button" id="bdyear+{{year}}" onclick=bdyearview({{year}})>Après</button></li>
+                                {% elif year == 1001 %}
+                                  <li><button class="dropdown-item" type="button" id="bdyear+{{year}}" onclick=bdyearview({{year}})>Avant</button></li>
+                                {% else %}
+                                <li><button class="dropdown-item" type="button" id="bdyear+{{year}}" onclick=bdyearview({{year}})>{{year}}</button></li>
+                                {% endif %}
+                              {% endfor %}
+                          </ul>
+                      </div>
+            </div> 
+            <div class="table-responsive"> 
+            <table class="table table-hover" id="tablebred">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Etalon</th>
+                  <th scope="col" style="width:40%">Notes</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodybred">
+              {% for mbred in mbreds %}
+                <tr id="bdrow+{{mbred.id}}" class="anime">
+                  <th scope="row" id="bdcol1+{{breed.id}}" data-value="{{mbred.date|date:"Y-m-d"}}">{{mbred.date}}</th>
+                  <td id="bdcol2+{{mbred.id}}" data-value="{{mbred.stallion}}">{{mbred.stallion}}</td>
+                  <td id="bdcol3+{{mbred.id}}" data-value="{{mbred.notes}}">{{mbred.notes}}</td>   
+                  <td id="bdcol4+{{mbred.id}}">  
+                    <button class="btn btn-light" id="bdedit+{{mbred.id}}" title="Modifier" onclick=editbredm({{mbred.id}})>✍</button>
+                    <button class="btn btn-light" id="bddel+{{mbred.id}}" title="Supprimer" onclick=deletebredm({{mbred.id}})>❌</button>          
+                  </td>                
+                </tr>  
+              {% endfor %}          
+            </tbody>
+          </table>    
+        </div>       
+        </div>
+
+        <div id="breedsedit" class="cont4">
+          <h3 class="display-6">Editer une saillie <button class="editbutton rounded-pill" id="backbreeds" onclick=goback('B')>Retour</button></h3>       
+          <div id="edtwarningbd" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtbd" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="bd_d">Date : *</label>
+              <input class="form-control" type="date" id="bd_d"  min="2010-01-01" max="2030-12-31"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="bd_s">Etalon :</label>
+              <input class="form-control" type="text" id="bd_s" maxlength="200" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <label for="bd_n">Notes : </label>
+           <input class="form-control" type="text" id="bd_n" maxlength="1000"/>
+           <br>
+           <input class="btn btn-primary" id='bd2_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+        <div id="breedsnew" class="cont4">
+          <h3 class="display-6">Ajouter une saillie <button class="editbutton rounded-pill" id="backbreeds" onclick=goback('B')>Retour</button></h3>       
+          <div id="crwarningbd" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="newbd" method='POST' autocomplete="off"> 
+          {% csrf_token %}
+          {{form10|crispy}}
+          <input class="btn btn-primary" id='bd_submit' type="submit" value="Ajouter"/>
+          </form>
+        </div>
+
+      {% elif horse.sex == 'Etalon'%}
+
+        <div id="breed" class="cont4" tabindex="0">
+          <h3 class="display-6">Saillies <button class="editbutton rounded-pill" id="ebreeds" onclick=addbreed({{horse.id}})>Ajouter &#128394</button></h3>    
+          <div style="text-align:right">
+            Année : <div class="btn-group" id="bryearchoice">
+                          <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="brshowselectyear" data-value="{{actualyear}}">
+                              {{actualyear}}
+                          </button>
+                          <ul class="dropdown-menu dropdown-menu-end">
+                              {% for year in yearsprev %}
+                              {% if year == 1111 %}
+                              <li><button class="dropdown-item" type="button" id="bryear+{{year}}" onclick=bryearview({{year}})>Après</button></li>
+                                {% elif year == 1001 %}
+                                  <li><button class="dropdown-item" type="button" id="bryear+{{year}}" onclick=bryearview({{year}})>Avant</button></li>
+                                {% else %}
+                                <li><button class="dropdown-item" type="button" id="bryear+{{year}}" onclick=bryearview({{year}})>{{year}}</button></li>
+                                {% endif %}
+                              {% endfor %}
+                          </ul>
+                      </div>
+            </div>  
+            <div class="table-responsive">
+            <table class="table table-hover" id="tablebreed">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Jument</th>
+                  <th scope="col" style="width:40%">Notes</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bodybreed">
+              {% for breed in breeds %}
+                <tr id="brrow+{{breed.id}}" class="anime">
+                  <th scope="row" id="brcol1+{{breed.id}}" data-value="{{breed.date|date:"Y-m-d"}}">{{breed.date}}</th>
+                  <td id="brcol2+{{breed.id}}" data-value="{{breed.mare}}">{{breed.mare}}</td>
+                  <td id="brcol3+{{breed.id}}" data-value="{{breed.notes}}">{{breed.notes}}</td>   
+                  <td id="brcol4+{{breed.id}}">  
+                    <button class="btn btn-light" id="bredit+{{breed.id}}" title="Modifier" onclick=editbreed({{breed.id}})>✍</button>
+                    <button class="btn btn-light" id="brdel+{{breed.id}}" title="Supprimer" onclick=deletebreed({{breed.id}})>❌</button>          
+                  </td>                
+                </tr>  
+              {% endfor %}          
+            </tbody>
+          </table>       
+        </div>
+        </div>
+
+        <div id="breededit" class="cont4">
+          <h3 class="display-6">Modifier une saillie<button class="editbutton rounded-pill" id="backbreed" onclick=goback('B')>Retour</button></h3>       
+          <div id="edtwarningbr" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="edtbr" autocomplete="off">
+          {% csrf_token %}      
+           <div class="row">
+            <div class="col-lg-5 col-md-4">
+              <label for="br_d">Date : *</label>
+              <input class="form-control" type="date" id="br_d"  min="2010-01-01" max="2030-12-31"/>
+            </div>
+            <div class="col-lg-5 col-md-4">
+              <label for="br_m">Jument :</label>
+              <input class="form-control" type="text" id="br_m" maxlength="200" default="Non spécifié"/>
+            </div>
+           </div>
+           <br>
+           <label for="br_n">Notes : </label>
+           <input class="form-control" type="text" id="br_n" maxlength="1000"/>
+           <br>
+           <input class="btn btn-primary" id='br_submit' type="submit" value="Editer"/>
+          </form>
+        </div>
+
+        <div id="breednew" class="cont4">
+          <h3 class="display-6">Ajouter une saillie <button class="editbutton rounded-pill" id="backbreeds" onclick=goback('B')>Retour</button></h3>       
+          <div id="crwarningbr" class="warning" tabindex="0"><p style="color:black">Les champs marqués d'un * doivent être renseignés.</p></div>
+          <form id="newbr" method='POST' autocomplete="off"> 
+          {% csrf_token %}
+          {{form9|crispy}}
+          <input class="btn btn-primary" id='br2_submit' type="submit" value="Ajouter"/>
+          </form>     
+        </div>
+      {% endif %}
+
+        <button id="backview" onclick=goback('all') class="btn btn-light"> Retour </button>
+
+        
+    </div>
+
+    
+   
+{% else %}
+    <div class="container " id="horse">
+      <div class="display-5">
+    Impossible d'accéder à votre requête.</div>
+      </div>
+{% endif %}
+
+{% endblock%}
+
+
+
+{% block script %} 
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="{% static 'horses/horsefunctions.js' %}"></script>
+    {% if horse.sex == "Jument" %}
+    <script src="{% static 'horses/horsef.js' %}"></script>  
+    {% elif horse.sex == "Etalon" %}  
+    <script src="{% static 'horses/horsem.js' %}"></script> 
+    {% else %}
+    <script src="{% static 'horses/horse.js'%}"></script> 
+    {% endif %}
+{% endblock %}

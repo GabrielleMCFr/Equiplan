@@ -1,0 +1,8 @@
+{% autoescape off %}  
+Salut {{ user.username }},  
+Cliquez sur le lien pour confirmer votre inscription sur Equiplan et commencer à utiliser votre compte,  
+http://{{ domain }}{% url 'activate' uidb64=uid token=token %}  
+
+Bien cordialement,
+Equiplan
+{% endautoescape %}  

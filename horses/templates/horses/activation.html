@@ -1,0 +1,18 @@
+{% extends "horses/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <div class="container" id="mycontacts">
+        <h2>Merci de votre inscription ! </h2>
+        <div class="cont4">
+            {{activstate}}
+        </div>
+
+        <div class="cont4" id="goagain" style="text-align:center">
+            <p>Si vous n'avez pas reçu d'email d'ici quelques minutes, le mail peut se trouver dans vos spams. Si ce n'est pas le cas, veuillez cliquer sur le bouton ci dessous pour renvoyer un email :</p>
+            <a type="button" class="btn btn-warning" id="sendagain" href="{% url 'emailconfnew' userid %}">Renvoyez-moi un email de confirmation</a>
+        </div>
+    </div>
+    
+{% endblock%}

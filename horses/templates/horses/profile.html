@@ -1,0 +1,141 @@
+{% extends "horses/layout.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block body %}
+{% if request.user == user %}
+    <div class="container container-fluid" id="myaccount">
+        <h2  class="display-6">Mon compte </h2>
+        <hr>
+        <div id='msg' class="warning" >
+            {% if message %}
+                {{message}}
+            {% endif %}
+        </div>
+        <div id="userprofile" class="cont">
+            <div class="row">
+                <div class="sidebar col-lg-2 col-md-3" >
+                    
+                    {% if user.picture == 'Femme' %}
+                    <img src="{% static "horses/avatars/Historical-Cowgirl-icon.png" %}" class="rounded-circle" style="width:100px" alt="female_avatar" >
+
+                    {% elif user.picture == 'Homme' %}
+                    <img src="{% static "horses/avatars/Historical-Cowboy-icon.png" %}" class="rounded-circle" style="width:100px" alt="male_avatar" >
+                    
+                    {% elif user.picture == 'Non spécifié' %}
+                    <img src="{% static "horses/grey.jpg" %}" class="rounded-circle" style="width:100px" alt="nopicture" >
+                    {% endif %}
+
+                   
+                </div>
+                    <div class="main col-lg-8 col-md-7">
+
+                    <h4>Bonjour, {{user.username}}</h4>
+                    <div class="cont2" id="infos">
+                        <h5> Vos informations personnelles<button class="editbutton rounded-pill" id="editinfos" onclick=editinfos({{user.id}}) title="Modifier mes informations personnelles ou mon mot de passe">Modifier &#128394</button></h5>
+                        <br>
+                        <p> Prénom : {{user.firstname}} </p>
+                        <p> Nom :  {{user.lastname}} </p>
+                        <p> Email : {{user.email}} </p>
+                        <p> Adresse : {{user.address}} </p>
+                        <p> Profession : {{user.job}} </p>
+                        <p> Nombre de chevaux enregistrés : {{count}}</p>
+                        
+                        <br>
+                        <button class="btn btn-light" id="editpassword" onclick=editpassword({{user.id}})> Modifier mon mot de passe </button>
+                    </div>
+                    <div class="cont2" id="deleteuser" style="text-align:right; padding-top:80px">
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal">Supprimer mon compte
+                        </button>
+                    </div>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Etes-vous sûr ?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Veuillez confirmer la supression 
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Annuler</button>
+                            <a type="button" class="btn btn-danger" href="{% url 'deleteuser' user.id %}">Supprimer</a>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            
+
+            <div id= "addressvalue" data-value="{{user.address}}" ></div>
+            <div id="jobvalue" data-value="{{user.job}}"></div>
+            <div id="fnamevalue" data-value="{{user.firstname}}"></div>
+            <div id="lnamevalue" data-value="{{user.lastname}}"></div>
+            <div id="picvalue" data-value="{{user.picture}}"></div>
+            
+
+        </div>
+        
+            <div id="edituser" class="cont2">
+                <h6 class="display-6">Modifiez vos informations personnelles</h6>
+                <form id="infos" autocomplete="off">
+                {% csrf_token %}
+                <input class="form-control" type="text" id="user-fname" placeholder="Prénom" maxlength="30"/>
+                <input class="form-control" type="text" id="user-lname" placeholder="Nom" maxlength="30"/>
+                <input class="form-control" type="text" id="user-live" placeholder="Adresse" maxlength="500"/> 
+                <input class="form-control" type="text" id="user-job" placeholder="travail" maxlength="50"/>
+                <label for="user-pic">Avatar :</label>
+                <select name="userpic" id="user-pic" class="form-control">
+                    {% if user.picture == 'Femme' %}
+                    <option value="{{user.picture}}" selected>{{user.picture}}</option>
+                    <option value="Homme">Homme</option>
+                    <option value="Non spécifié">Non spécifié</option>
+                    {% elif user.picture == 'Homme'%}
+                    <option value="{{user.picture}}" selected>{{user.picture}}</option>
+                    <option value="Femme">Femme</option>
+                    <option value="Non spécifié">Non spécifié</option>
+                    {% else %}
+                    <option value="{{user.picture}}" selected>{{user.picture}}</option>
+                    <option value="Femme">Femme</option>
+                    <option value="Homme">Homme</option>
+                    {% endif %}   
+                  </select>
+                <input class="btn btn-primary" id='user-submit' type="submit" value="Valider"> 
+                </form>           
+            </div>
+            
+            <div id="editmdp" class="cont2">
+                <h6 class="display-6">Modifiez votre mot de passe</h6>
+                <div id="warning" class="warning"></div>
+                <form id="mdp">
+                {% csrf_token %}
+                <input class="form-control" type="password" id="newmdp" placeholder="Entrez votre nouveau mot de passe" /> 
+                <input class="form-control" type="password" id="confmdp" placeholder="Confirmez votre mot de passe"/>
+                <input id='editmdp' type="submit" value="Changer" class="btn btn-primary"> 
+                </form>          
+            </div>
+
+            
+
+            <button id="backview" onclick=goback() class="btn btn-light"> Retour </button>
+                    
+    </div>
+
+{% else %}
+    <div class="container" id="myaccount">
+        Impossible d'afficher la requête</div>
+           
+{% endif %}
+
+{% endblock%}
+
+{% block script %} 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="{% static 'horses/myprofile.js' %}"></script>    
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "horses/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    <div id="help" class="container">
+      <h1 class="display-6" style="text-align:center"> Aide </h1>
+      <br>
+      
+        <div id="helpuser" class="cont2">
+            <div id="faq" class="cont4">
+                <div class="accordion accordion-flush" id="accordionFlushExample">
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="flush-headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                          Fonctionnement
+                        </button>
+                      </h2>
+                      <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body"><p>Equiplan est une application permettant de gérer vos chevaux et de réunir vos rendez vous équestres. Vous pouvez également noter votre répertoire et l'inventaire de vos produits.
+                          Pour commencer, une fois connecté, il suffit de cliquer son l'onglet "Mes chevaux" dans la barre de navigation. Vous aurez ensuite l'occasion d'ajouter votre premier cheval en cliquant sur le bouton  <button class="editbutton2 rounded-pill">Ajouter un cheval</button> à gauche, remplir et soumettre le questionnaire en cliquant sur le bouton bleu enregistrer en bas de page, et c'est parti ! <p>
+                            <br>
+                          <p>La page <strong>Mes chevaux</strong> regroupe donc vos chevaux enregistrés et vous donne la possibilité d'en ajouter. Pour accéder au dossier d'un cheval en particulier, cliquez sur son nom.</p>
+                            <br>
+                          <p>Vous accédez donc à son dossier personnel, et vous pouvez commencer à entrer des informations, modifier des informations existantes, ou supprimer le cheval de votre compte. Vous pouvez modifier les informations générales si vous le souhaitez, en cliquant sur le bouton <button class="editbutton rounded-pill">Modifier &#128394</button></p>
+                            <br>
+                            <p>Vous pouvez ajouter une photo si vous le souhaitez, en cliquant sur le rond gris à droite, ou modifier la photo en cliquant sur celle-ci.</p>
+                            <br>
+                            <p> Vous pouvez ensuite voir une barre de navigation avec des icônes, à chaque fois que vous cliquez sur une catégorie, vous avez accès au tableau de la catégorie sélectionnée, contenant les informations disponibles du cheval. Si le cheval est un étalon ou une jument, vous aurez en plus un onglet <strong>Elevage</strong>.</p>
+                            <br>
+      
+                            <p>Chaque tableau fonctionne de la même façon, en cliquant sur le bouton <button class="editbutton rounded-pill">Ajouter &#128394</button>, vous ajoutez une nouvelle ligne au tableau. Dans cette ligne, vous aurez les informations que vous avez spécifiées, et une dernière colonne "Actions" contenant deux symboles : ✍ pour éditer les informations de la colonne, et ❌ pour la supprimer. Dans le cas des catégories <strong>Incidents</strong> et, dans le cas d'une jument, <strong>Gestation</strong>, les informations disponibles étant trop volumineuses pour un tableau, vous avez une troisième icône 📖 qui vous donnera accès à la fiche détaillée de la colonne sélectionnée. Un bouton Années en haut à droite du tableau vous donne la possibilité de consulter les informations disponibles selon l'année sélectionnée, vous donnant accès à l'historique du cheval et vous permettant de prévoir des rendez-vous ultérieurs.</p>
+                            <br>
+                            <p>Les catégories <strong>Notes</strong> et <strong>Pedigree</strong> sont des catégories un peu à part, ayant juste un bouton <button class="editbutton rounded-pill"> Modifier &#128394</button>. Vous pouvez modifier ou effacer à volonté.</p>
+                          </div>
+                      </div>
+                    </div>
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="flush-headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
+                          Page d'accueil
+                        </button>
+                      </h2>
+                      <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body"><p>La page d'accueil vous donne un accès rapide à vos rendez-vous, dates et concours des 14 prochains jours, tous chevaux confondus. Seule exception pour les gestations, vous pouvez voir toutes vos gestations de l'année. En cliquant sur une date, vous êtes envoyés directement sur la page du dossier personnel du cheval concerné.</p></div>
+                      </div>
+                    </div>
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" id="flush-headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
+                          Contacts et inventaire
+                        </button>
+                      </h2>
+                      <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body"><p>Equiplan vous donne la possibilité de stocker vos <strong>contacts</strong> équestres pour pouvoir les retrouver plus facilement. Pour ce faire, cliquez sur l'onglet <strong>Mes contacts</strong> de la barre de navigation. Pour ajouter un contact, cliquez sur le bouton  <button class="editbutton2 rounded-pill">Ajouter un contact</button> à gauche, et soumettre le questionnaire en cliquant sur le bouton bleu ajouter en bas de page. La page contenant tous vos contacts vous montre leur nom, leur numéro et leur profession. En cliquant sur leur nom, vous êtes envoyés sur leur page montrant toutes les informations les concernant. De là, vous pouvez modifier ces informations ou supprimer le contact.</p>
+                        <p> Vous avez également la possibilité de faire votre <strong>inventaire</strong> et de le tenir à jour en ajustant les quantités. cliquez sur le bouton  <button class="editbutton2 rounded-pill">Ajouter un contact</button> à gauche, et soumettre le questionnaire en cliquant sur le bouton bleu ajouter en bas de page. Les produits entrés sont ajoutés dans le tableau correspondant à la date à laquelle vous les avez ajoutés. Vous pouvez changer le tableau selon les années grâce au bouton <strong>Année</strong> en haut à droite du tableau. Pour chaque ligne du tableau, vous pouvez voir les informations que vous avez saisies et trois boutons dans la colonne <strong>Actions</strong>. ✍ est pour éditer les informations du produit, 🗑 est pour le déclarer vide/fini, et ❌ est pour le supprimer. Si le produit est vide, alors sa quantité est à 0, et il apparaît en gris. Si vous avez rentré une date de péremption, lors qu'elle sera dépassée elle deviendra rouge si la quantité n'est pas de 0. </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>               
+            </div>
+        </div>       
+    </div>
+{% endblock%}
+
+{% block script %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    
+
+{% endblock %}
