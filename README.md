@@ -1,6 +1,7 @@
 # EQUIPLAN
 
 ## Since heroku's change of policy for their free plans, the app isn't depoloyed anymore. A PERN beta version is in development.
+## Video here : https://www.youtube.com/watch?v=T3KuThCVK5w
 
 ### Intro
 My application, Equiplan, is a planning application for horses owners, breeders, etc. Its main purpose is compiling every date and data we need to remember in one app. When one have a lot of horses, with a lot a different protocols for vaccines, dewormers, breedings etc, we always strugle to remember all of it for every horse, and this app helps in that. It also send emails notifications as reminders. It's in french, since I want to deploy it later for french users.
